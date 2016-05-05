@@ -22,12 +22,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Nintenlord.ROMHacking.GBA;
-using Nintenlord.ROMHacking.GBA.Compressions;
-using Nintenlord.ROMHacking.GBA.Graphics;
 using System.Resources;
 
 namespace PGMEBackend
@@ -40,7 +36,7 @@ namespace PGMEBackend
         static string programTitle;
         public static IDictionary<int, string> FRLGBehaviorBytes;
         public static IDictionary<int, MapBank> mapBanks;
-        public static IDictionary<int, MapName> mapNames;
+        public static IDictionary<int, String> mapNames;
         public static IDictionary<int, MapLayout> mapLayouts;
         public static IDictionary<int, MapTileset> mapTilesets;
 
@@ -48,15 +44,10 @@ namespace PGMEBackend
 
         public static int maxLayout;
         public static int mapLayoutNotFoundCount;
-        public static bool extraLayoutsLoaded;
-        public static bool isEdited = false;
         public static int timeOfDay = 2;
 
         static string currentFilePath;
         static string currentFileName;
-
-        public static ResourceManager rmInternalStrings = InternalStrings.ResourceManager;
-        public static ResourceManager rmResources = Properties.Resources.ResourceManager;
 
         public static Map currentMap;
         public static MapLayout currentLayout;
@@ -69,7 +60,6 @@ namespace PGMEBackend
 
         static void Main()
         {
-            //Initialize();
         }
 
         public static void Initialize(UIInteractionLayer guiMain)
@@ -77,6 +67,7 @@ namespace PGMEBackend
             mainGUI = guiMain;
             ROM = new GBAROM();
             FRLGBehaviorBytes = new Dictionary<int, string>();
+            Config.ReadConfig();
         }
 
         public static void SetMainGUITitle(string title)
@@ -93,30 +84,10 @@ namespace PGMEBackend
             }
         }
 
-        public static void ReloadROM()
-        {
-            LoadROM(currentFilePath);
-        }
-
         public static void LoadROM(string filename)
         {
-            if (ROM.Edited || isEdited)
-            {
-                string result = ShowMessageBox(rmInternalStrings.GetString("UnsavedChanges"), rmInternalStrings.GetString("UnsavedChangesTitle"), "YesNoCancel", "Warning");
-                if (result == "Yes")
-                    SaveROM();
-                else if (result == "Cancel")
-                    return;
-            }
-
-            Stopwatch loadTime = new Stopwatch();
-            loadTime.Start();
-
-            //Put all loading code between here and "Stop timer" comment
-
             if (OpenROM(filename) == 0)
             {
-                isEdited = false;
                 currentFilePath = filename;
                 currentFileName = Path.GetFileName(filename);
 
@@ -125,7 +96,6 @@ namespace PGMEBackend
                 maxLayout = 0;
                 mapLayoutNotFoundCount = 0;
                 mainGUI.ClearMapNodes();
-                extraLayoutsLoaded = false;
                 currentLayout = null;
 
                 mapTilesets = new SortedDictionary<int, MapTileset>();
@@ -136,182 +106,39 @@ namespace PGMEBackend
 
                 mainGUI.EnableControlsOnROMLoad();
                 mainGUI.LoadMapNodes();
-                currentGame.Songs = Config.musicLists.Songs[currentGame.RomType];
-
-                //Stop timer
-                loadTime.Stop();
-
-                TimeSpan ts = loadTime.Elapsed;
-                string elapsedTime = ts.Seconds + "." + ts.Milliseconds;
-
-                mainGUI.SetTitleText(programTitle + " | " + currentFileName);
-                mainGUI.SetLoadingStatus(string.Format(rmInternalStrings.GetString("ROMLoadedStatus"), currentFileName, elapsedTime));
-
-                //Oh goodie, all the errors
-
-                foreach (Exception ex in loadExceptions)
-                {
-                    if (ex is TilesetLoadErrorException)
-                        ShowMessageBox(ex.Message, rmInternalStrings.GetString("CouldNotReadTilesetTitle"), "OK", "Warning");
-                    else if (ex is MapLayoutLoadErrorException)
-                        ShowMessageBox(ex.Message, rmInternalStrings.GetString("CouldNotReadTilesetTitle"), "OK", "Warning");
-                }
-
-                if (mapLayoutNotFoundCount > 0)
-                    ShowMessageBox(string.Format(rmInternalStrings.GetString("CouldNotFindLayout"), mapLayoutNotFoundCount), rmInternalStrings.GetString("CouldNotFindLayoutTitle"), "OK", "Warning");
-
-            }
-            else
-            {
-                loadTime.Stop();
             }
         }
 
         public static int OpenROM(string path)
         {
-            
-            if (ROM.Opened)
-            {
-                //WriteDatas(rawGraphics.Edited, rawPalette.Edited, rawTSA.Edited);
-            }
+            ROM.OpenROM(path);
+            currentGame = Config.gameList.Games[ROM.GameCode].DereferencePointers();
 
-            try
-            {
-                ROM.OpenROM(path);
-            }
-            catch (IOException ex)
-            {
-                IOException(ex);
-                return -1;
-            }
-            try
-            {
-                currentGame = Config.gameList.Games[ROM.GameCode].DereferencePointers();
-            }
-            catch(KeyNotFoundException)
-            {
-                ShowMessageBox(string.Format(rmInternalStrings.GetString("ROMCodeNotFound"), ROM.GameCode), rmInternalStrings.GetString("ROMCodeNotFoundTitle"), "OK", "Warning");
-                return -1;
-            }
             return 0;
-        }
-
-        public static void SaveROM()
-        {
-
-        }
-
-        public static void IOException(Exception ex)
-        {
-            
-            ShowMessageBox(ex.Message, rmInternalStrings.GetString("IOExceptionTitle"), "OK", "Error");
-        }
-
-        public static void FileNotFound(Exception ex)
-        {
-            
-            ShowMessageBox(ex.Message, rmInternalStrings.GetString("FileNotFoundTitle"), "OK", "Error");
-        }
-        
-        public static string ShowMessageBox(string body, string title)
-        {
-            return mainGUI.ShowMessageBox(body, title);
-        }
-
-        public static string ShowMessageBox(string body, string title, string buttons)
-        {
-            return mainGUI.ShowMessageBox(body, title, buttons);
-        }
-
-        public static string ShowMessageBox(string body, string title, string buttons, string icon)
-        {
-            return mainGUI.ShowMessageBox(body, title, buttons, icon);
         }
 
         private static void LoadMapBanks()
         {
             
             mapBanks = new Dictionary<int, MapBank>();
-            try
-            {
-                int romMapBank = currentGame.MapBanks;
-                int mapBankCount = currentGame.MapBankCount;
-                byte[] mapBankSizes = currentGame.MapBankSizes;
-                for (int currentBank = 0; currentBank < mapBankCount; currentBank++)
-                {
-                    mapBanks.Add(currentBank, new MapBank());
-                    for (int currentMap = 0, bankScan = ROM.ReadPointer(romMapBank); currentMap < mapBankSizes[currentBank]; currentMap++)
-                    {
-                        mapBanks[currentBank].AddMap(currentMap, new Map(ROM.ReadPointer(bankScan), ROM, currentBank, currentMap));
-                        bankScan += 4;
-                    }
-                    romMapBank += 4;
-                }
-            }
-            catch (ArgumentException)
-            {
-                throw;
-            }
 
-            if (maxLayout > 0)
-                TryToLoadExtraLayouts();
-        }
-
-        public static bool TryToLoadExtraLayouts()
-        {
-            mapLayouts = new Dictionary<int, MapLayout>();
-            int layoutCount = 0;
-            for (int layouts = currentGame.MapLayouts; layoutCount < maxLayout; layouts += 4, layoutCount++)
+            int romMapBank = currentGame.MapBanks;
+            int mapBankCount = currentGame.MapBankCount;
+            byte[] mapBankSizes = currentGame.MapBankSizes;
+            for (int currentBank = 0; currentBank < mapBankCount; currentBank++)
             {
-                int pointer = ROM.ReadPointer(layouts);
-                byte[] sequence = ROM.GetData(layouts, 0x4);
-                if (pointer != 0 && (pointer < 0x200000 || pointer > 0x2000000))
-                    break;
-                if (sequence.SequenceEqual(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }))
-                    break;
-                if (sequence.SequenceEqual(new byte[] { 0x7F, 0x7F, 0x7F, 0x7F }))
-                    break;
-            }
-            if (layoutCount <= currentGame.MapLayoutCount)
-                return false;
-            currentGame.MapLayoutCount = (short)(layoutCount);
-            LoadMapLayouts();
-            foreach (MapBank bank in mapBanks.Values)
-            {
-                foreach (Map map in bank.GetBank().Values)
+                mapBanks.Add(currentBank, new MapBank());
+                for (int currentMap = 0, bankScan = ROM.ReadPointer(romMapBank); currentMap < mapBankSizes[currentBank]; currentMap++)
                 {
-                    if (map.layout == null && mapLayouts.ContainsKey(map.mapLayoutIndex))
-                    {
-                        mapLayoutNotFoundCount--;
-                        map.layout = mapLayouts[map.mapLayoutIndex];
-                    }
+                    mapBanks[currentBank].AddMap(currentMap, new Map(ROM.ReadPointer(bankScan), ROM, currentBank, currentMap));
+                    bankScan += 4;
                 }
+                romMapBank += 4;
             }
-            extraLayoutsLoaded = true;
-            return true;
         }
 
         public static int LoadMap(object map)
         {
-            if (isEdited)
-            {
-                string result = UnsavedChangesDialog();
-                if (result == "Yes")
-                    SaveMap();
-                else if (result == "No")
-                {
-                    if(currentMap != null)
-                        currentMap.Revert();
-                    currentLayout.Revert();
-                }
-                else if (result == "Cancel")
-                    return 1;
-                isEdited = false;
-            }
-
-            Stopwatch loadTime = new Stopwatch();
-            loadTime.Start();
-
             mainGUI.EnableControlsOnMapLoad();
             if (currentLayout != null)
             {
@@ -331,64 +158,35 @@ namespace PGMEBackend
 
             mainGUI.LoadMap(map);
 
-            //Stop timer
-            loadTime.Stop();
-
-            TimeSpan ts = loadTime.Elapsed;
-            string elapsedTime = ts.Seconds + "." + (ts.Milliseconds / 10);
-
-            mainGUI.SetTitleText(programTitle + " | " + currentFileName + " | " + ((currentMap != null) ? currentMap.name : currentLayout.name));
-            mainGUI.SetLoadingStatus(string.Format(rmInternalStrings.GetString("MapLoadedStatus"), (currentMap != null) ? currentMap.name : currentLayout.name, elapsedTime));
             return 0;
-        }
-
-        public static void SaveMap()
-        {
-            if (currentMap != null)
-                currentMap.Save();
-            currentLayout.Save();
-            isEdited = false;
         }
         
         private static void LoadMapNames()
         {
-            mapNames = new Dictionary<int, MapName>();
-            try
+            mapNames = new Dictionary<int, String>();
+
+            int mapTotal = currentGame.MapNameTotal;
+            int currMap = currentGame.MapNameStart;
+            int romMapNames = currentGame.MapNames;
+            if (currentGame.RomType == "E")
+                romMapNames += 4;
+            while (currMap <= mapTotal)
             {
-                int mapTotal = currentGame.MapNameTotal;
-                int currMap = currentGame.MapNameStart;
-                int romMapNames = currentGame.MapNames;
-                if (currentGame.RomType == "E")
+                mapNames.Add(currMap, ROMCharactersToString(ROM.ReadPointer(romMapNames)));
+                if (currentGame.RomType == "FRLG")
                     romMapNames += 4;
-                while (currMap <= mapTotal)
-                {
-                    mapNames.Add(currMap, new MapName(ROMCharactersToString(ROM.ReadPointer(romMapNames))));
-                    if (currentGame.RomType == "FRLG")
-                        romMapNames += 4;
-                    else if (currentGame.RomType == "E")
-                        romMapNames += 8;
-                    currMap++;
-                }
-            }
-            catch (ArgumentException)
-            {
-                throw;
+                else if (currentGame.RomType == "E")
+                    romMapNames += 8;
+                currMap++;
             }
         }
 
         private static void LoadMapLayouts()
         {
-            try
+            for (int currLayout = 0, layoutCount = currentGame.MapLayoutCount, layouts = currentGame.MapLayouts; currLayout < layoutCount; currLayout++, layouts += 4)
             {
-                for (int currLayout = 0, layoutCount = currentGame.MapLayoutCount, layouts = currentGame.MapLayouts; currLayout < layoutCount; currLayout++, layouts += 4)
-                {
-                    if(ROM.ReadPointer(layouts) != 0 && !mapLayouts.ContainsKey(currLayout + 1))
-                        mapLayouts.Add(currLayout + 1, new MapLayout(currLayout + 1, ROM.ReadPointer(layouts), ROM));
-                }
-            }
-            catch (ArgumentException)
-            {
-                throw;
+                if(ROM.ReadPointer(layouts) != 0 && !mapLayouts.ContainsKey(currLayout + 1))
+                    mapLayouts.Add(currLayout + 1, new MapLayout(currLayout + 1, ROM.ReadPointer(layouts), ROM));
             }
         }
 
@@ -401,14 +199,6 @@ namespace PGMEBackend
                 character = ROM.GetData(baseLocation++, 1)[0];
                 switch (character)
                 {
-                    /*
-                    case 0x53:
-                        s += "PK";
-                        break;
-                    case 0x54:
-                        s += "MN";
-                        break;
-                    */
                     case 0xFD:
                         int bufferNum = ROM.GetData(baseLocation++, 1)[0];
                         switch (bufferNum)
@@ -465,14 +255,6 @@ namespace PGMEBackend
                 {
                     switch (character)
                     {
-                        /*
-                        case 0x53:
-                            s += "PK";
-                            break;
-                        case 0x54:
-                            s += "MN";
-                            break;
-                        */
                         case 0xFD:
                             int bufferNum = ROM.GetData(baseLocation++, 1)[0];
                             switch (bufferNum)
@@ -533,22 +315,6 @@ namespace PGMEBackend
             {
                 return '[' + character.ToString("X2") + ']';
             }
-        }
-        
-        public static string UnsavedChangesQuitDialog()
-        {
-            return ShowMessageBox(rmInternalStrings.GetString("UnsavedChangesExit"), rmInternalStrings.GetString("UnsavedChangesTitle"), "YesNoCancel", "Warning");
-        }
-
-        public static string UnsavedChangesDialog()
-        {
-            return ShowMessageBox(rmInternalStrings.GetString("UnsavedChanges"), rmInternalStrings.GetString("UnsavedChangesTitle"), "YesNoCancel", "Warning");
-        }
-
-        public static void ChangePermsVisibility(bool showPerms)
-        {
-            showingPerms = showPerms;
-            glMapEditor.RedrawAllChunks();
         }
     }
 }

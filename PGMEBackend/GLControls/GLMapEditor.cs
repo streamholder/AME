@@ -1,9 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 
 namespace PGMEBackend.GLControls
 {
@@ -23,8 +20,6 @@ namespace PGMEBackend.GLControls
         public Color rectPaintColor = Color.FromArgb(255, 0, 0);
         public Color rectSelectColor = Color.FromArgb(255, 255, 0);
 
-        public Spritesheet movementPerms;
-
         public GLMapEditor(int w, int h)
         {
             width = w;
@@ -32,7 +27,6 @@ namespace PGMEBackend.GLControls
             GL.ClearColor(Color.Transparent);
             SetupViewport();
             rectColor = rectDefaultColor;
-            movementPerms = Spritesheet.Load(Properties.Resources.Permissions_16x16, 16, 16);
         }
 
         public static implicit operator bool (GLMapEditor b)
@@ -71,11 +65,6 @@ namespace PGMEBackend.GLControls
 
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Blend);
-            /*
-            var err = GL.GetError();
-            if (err != ErrorCode.NoError)
-                System.Windows.Forms.MessageBox.Show(err.ToString(), "OpenGL Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-            */
         }
 
         private void PreRender()
@@ -95,15 +84,6 @@ namespace PGMEBackend.GLControls
             {
                 layout.Draw((layout.globalTileset != null) ? layout.globalTileset.tileSheets : null,
                             (layout.localTileset != null) ? layout.localTileset.tileSheets : null, 0, 0, 1);
-
-                if(Config.settings.ShowGrid)
-                {
-                    Surface.SetColor(Color.Black);
-                    for(int i = 0; i < layout.layoutWidth; i++)
-                        Surface.DrawLine(new double[] { i * 16, 0, i * 16, height });
-                    for (int i = 0; i < layout.layoutHeight; i++)
-                        Surface.DrawLine(new double[] { 0, i * 16, width, i * 16 });
-                }
 
                 if (mouseX != -1 && mouseY != -1)
                 {
@@ -154,8 +134,6 @@ namespace PGMEBackend.GLControls
             endMouseX = -1;
             endMouseY = -1;
         }
-
-        short[] oldLayout;
 
         public void PaintBlocksToMap(short[] blockArray, int x, int y, int w, int h)
         {

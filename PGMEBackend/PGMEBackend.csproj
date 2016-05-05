@@ -40,7 +40,8 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>DMAKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
@@ -65,21 +66,11 @@
   <ItemGroup>
     <Compile Include="Config.cs" />
     <Compile Include="DataBuffer.cs" />
-    <Compile Include="Entities\Entity.cs" />
-    <Compile Include="Entities\NPC.cs" />
-    <Compile Include="Entities\Sign.cs" />
-    <Compile Include="Entities\Trigger.cs" />
-    <Compile Include="Entities\Warp.cs" />
     <Compile Include="GLControls\GLBorderBlocks.cs" />
     <Compile Include="GLControls\GLBlockChooser.cs" />
     <Compile Include="GLControls\GLMapEditor.cs" />
     <Compile Include="Graphics\FrameBuffer.cs" />
     <Compile Include="Graphics\ImageManipulator.cs" />
-    <Compile Include="InternalStrings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>InternalStrings.resx</DependentUpon>
-    </Compile>
     <Compile Include="Maps.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -94,9 +85,6 @@
     </Compile>
     <Compile Include="Tilesets.cs" />
     <Compile Include="UIInteractionLayer.cs" />
-    <None Include="Music.yaml" />
-    <None Include="BehaviorBytes.yaml" />
-    <None Include="DMAKey.pfx" />
     <None Include="OpenTK.dll.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -116,17 +104,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AME.yaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="InternalStrings.es.resx" />
-    <EmbeddedResource Include="InternalStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>InternalStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -142,13 +123,6 @@
       <Project>{8fa48ef8-3e11-494a-b587-592d7c22efdf}</Project>
       <Name>Nintenlord</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Permissions_16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\Entities_16x16.png" />
-    <Content Include="Resources\Entities_64x64.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

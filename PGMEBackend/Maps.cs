@@ -19,15 +19,9 @@
 
 using Nintenlord.ROMHacking.GBA;
 using OpenTK.Graphics.OpenGL;
-using PGMEBackend.Entities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PGMEBackend
 {
@@ -35,7 +29,7 @@ namespace PGMEBackend
     {
         public string name
         {
-            get { return "[" + currentBank.ToString("X2") + ", " + currentMap.ToString("X2") + "] " + Program.mapNames[mapNameIndex].name; }
+            get { return "[" + currentBank.ToString("X2") + ", " + currentMap.ToString("X2") + "] " + Program.mapNames[mapNameIndex]; }
         }
 
         public byte[] rawHeaderOrig;
@@ -47,42 +41,17 @@ namespace PGMEBackend
         public byte currentMap;
 
         public int mapDataPointer;
-        public int eventDataPointer;
-        public int mapScriptDataPointer;
         public int connectionsDataPointer;
-        public short musicNumber;
         public short mapLayoutIndex;
         public byte mapNameIndex;
-        public byte visibility;
-        public byte weather;
         public byte mapType;
-        public byte optionsByte1;
-        public byte optionsByte2;
-        public byte optionsByte3;
-        public byte battleBackground;
-
-        public bool showsName;
-        public bool canRun;
-        public bool canRideBike;
-        public bool canEscape;
-
-        public List<NPC> NPCs;
-        public List<Warp> Warps;
-        public List<Trigger> Triggers;
-        public List<Sign> Signs;
 
         public MapLayout layout;
 
         public GBAROM originROM;
 
-        public bool edited
-        {
-            get { return !rawHeaderOrig.SequenceEqual(rawHeader); }
-        }
-
         public Map()
         {
-
         }
 
         public Map(int Offset, GBAROM ROM, int CurrentBank, int CurrentMap)
@@ -108,150 +77,13 @@ namespace PGMEBackend
             }
         }
 
-        public void Revert()
-        {
-            rawHeader = (byte[])rawHeaderOrig.Clone();
-            LoadMapHeaderFromRaw();
-            LoadEntitiesFromRaw();
-        }
-
-        public void Save()
-        {
-            WriteMapHeaderToRaw();
-            WriteEntitiesToRaw();
-            rawHeaderOrig = (byte[])rawHeader.Clone();
-        }
-
-        [Flags]
-        enum FRLGOptions
-        {
-            None = 0x0000, CanRideBike = 0x0001, CanEscape = 0x0001, CanRun = 0x0002, ShowsName = 0x0004
-        }
-
-        [Flags]
-        enum EOptions
-        {
-            None = 0x0000, CanRideBike = 0x0001, CanEscape = 0x0002, CanRun = 0x0004, ShowsName = 0x0008
-        }
-
         public void LoadMapHeaderFromRaw()
         {
             mapDataPointer = BitConverter.ToInt32(rawHeader, 0x0) - 0x8000000;
-            eventDataPointer = BitConverter.ToInt32(rawHeader, 0x4) - 0x8000000;
-            mapScriptDataPointer = BitConverter.ToInt32(rawHeader, 0x8) - 0x8000000;
             connectionsDataPointer = BitConverter.ToInt32(rawHeader, 0xC) - 0x8000000;
-            musicNumber = BitConverter.ToInt16(rawHeader, 0x10);
             mapLayoutIndex = BitConverter.ToInt16(rawHeader, 0x12);
             mapNameIndex = rawHeader[0x14];
-            visibility = rawHeader[0x15];
-            weather = rawHeader[0x16];
             mapType = rawHeader[0x17];
-            optionsByte1 = rawHeader[0x18];
-            optionsByte2 = rawHeader[0x19];
-            optionsByte3 = rawHeader[0x1A];
-            battleBackground = rawHeader[0x1B];
-            if (Program.currentGame.RomType == "FRLG")
-            {
-                showsName = (optionsByte2 & (int)FRLGOptions.ShowsName) == (int)FRLGOptions.ShowsName;
-                canRun = (optionsByte2 & (int)FRLGOptions.CanRun) == (int)FRLGOptions.CanRun;
-                canRideBike = (optionsByte1 & (int)FRLGOptions.CanRideBike) == (int)FRLGOptions.CanRideBike;
-                canEscape = (optionsByte2 & (int)FRLGOptions.CanEscape) == (int)FRLGOptions.CanEscape;
-            }
-            else if (Program.currentGame.RomType == "E")
-            {
-                showsName = (optionsByte3 & (int)EOptions.ShowsName) == (int)EOptions.ShowsName;
-                canRun = (optionsByte3 & (int)EOptions.CanRun) == (int)EOptions.CanRun;
-                canRideBike = (optionsByte3 & (int)EOptions.CanRideBike) == (int)EOptions.CanRideBike;
-                canEscape = (optionsByte3 & (int)EOptions.CanEscape) == (int)EOptions.CanEscape;
-            }
-
-            if(eventDataPointer > 0 && eventDataPointer < 0x2000000)
-                LoadEntitiesFromRaw();
-        }
-
-        public void LoadEntitiesFromRaw()
-        {
-            rawEntityHeader = originROM.GetData(eventDataPointer, 0x14);
-
-            NPCs = new List<NPC>();
-            int npcOffset = BitConverter.ToInt32(rawEntityHeader, 0x4) - 0x8000000;
-
-            if (npcOffset > 0 && npcOffset < 0x2000000)
-                for (int i = 0; i < rawEntityHeader[0]; i++)
-                    NPCs.Add(new NPC(npcOffset + i * 0x18, originROM));
-
-            Warps = new List<Warp>();
-            int warpOffset = BitConverter.ToInt32(rawEntityHeader, 0x8) - 0x8000000;
-            if (warpOffset > 0 && warpOffset < 0x2000000)
-                for (int i = 0; i < rawEntityHeader[1]; i++)
-                Warps.Add(new Warp(warpOffset + i * 0x8, originROM));
-
-            Triggers = new List<Trigger>();
-            int triggerOffset = BitConverter.ToInt32(rawEntityHeader, 0xC) - 0x8000000;
-            if (triggerOffset > 0 && triggerOffset < 0x2000000)
-                for (int i = 0; i < rawEntityHeader[2]; i++)
-                    Triggers.Add(new Trigger(triggerOffset + i * 0x10, originROM));
-
-            Signs = new List<Sign>();
-            int signOffset = BitConverter.ToInt32(rawEntityHeader, 0x10) - 0x8000000;
-            if (signOffset > 0 && signOffset < 0x2000000)
-                for (int i = 0; i < rawEntityHeader[3]; i++)
-                    Signs.Add(new Sign(signOffset + i * 0xC, originROM));
-        }
-
-        public void WriteMapHeaderToRaw()
-        {
-            Buffer.BlockCopy(BitConverter.GetBytes(mapDataPointer + 0x8000000), 0, rawHeader, 0x0, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(eventDataPointer + 0x8000000), 0, rawHeader, 0x4, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(mapScriptDataPointer + 0x8000000), 0, rawHeader, 0x8, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(connectionsDataPointer + 0x8000000), 0, rawHeader, 0xC, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(musicNumber), 0, rawHeader, 0x10, 2);
-            Buffer.BlockCopy(BitConverter.GetBytes(mapLayoutIndex), 0, rawHeader, 0x12, 2);
-            rawHeader[0x14] = mapNameIndex;
-            rawHeader[0x15] = visibility;
-            rawHeader[0x16] = weather;
-            rawHeader[0x17] = mapType;
-            if (Program.currentGame.RomType == "FRLG")
-            {
-                optionsByte1 = (byte)((int)(canRideBike ? FRLGOptions.CanRideBike : FRLGOptions.None) | (optionsByte1 & ~((int)FRLGOptions.CanRideBike)));
-                optionsByte2 = (byte)((int)((showsName ? FRLGOptions.ShowsName : FRLGOptions.None) | (canRun ? FRLGOptions.CanRun : FRLGOptions.None) | (canEscape ? FRLGOptions.CanEscape : FRLGOptions.None)) | (optionsByte2 & ~(int)(FRLGOptions.ShowsName | FRLGOptions.CanRun | FRLGOptions.CanEscape)));
-            }
-            else if (Program.currentGame.RomType == "E")
-            {
-                optionsByte3 = (byte)((int)((canRideBike ? EOptions.CanRideBike : EOptions.None) | (showsName ? EOptions.ShowsName : EOptions.None) | (canRun ? EOptions.CanRun : EOptions.None) | (canEscape ? EOptions.CanEscape : EOptions.None)) | (optionsByte3 & ~(int)(EOptions.CanRideBike | EOptions.ShowsName | EOptions.CanRun | EOptions.CanEscape)));
-            }
-            rawHeader[0x18] = optionsByte1;
-            rawHeader[0x19] = optionsByte2;
-            rawHeader[0x1A] = optionsByte3;
-            rawHeader[0x1B] = battleBackground;
-        }
-
-        public void WriteEntitiesToRaw()
-        {
-            rawEntityHeader[0] = (byte)NPCs.Count;
-            rawEntityHeader[1] = (byte)Warps.Count;
-            rawEntityHeader[2] = (byte)Triggers.Count;
-            rawEntityHeader[3] = (byte)Signs.Count;
-
-            foreach (NPC npc in NPCs)
-            {
-               npc.WriteDataToRaw();
-            }
-
-            foreach (Warp warp in Warps)
-            {
-                warp.WriteDataToRaw();
-            }
-
-            foreach (Trigger trigger in Triggers)
-            {
-                trigger.WriteDataToRaw();
-            }
-
-            foreach (Sign sign in Signs)
-            {
-                sign.WriteDataToRaw();
-            }
         }
     }
 
@@ -274,20 +106,6 @@ namespace PGMEBackend
         }
     }
 
-    class MapName
-    {
-        public string name;
-        public MapName(string mapName)
-        {
-            name = mapName;
-        }
-
-        public override string ToString()
-        {
-            return name;
-        }
-    }
-
     public class MapLayout
     {
         public byte[] rawHeaderOrig;
@@ -295,7 +113,7 @@ namespace PGMEBackend
 
         public string name
         {
-            get { return "[" + layoutIndex.ToString("X4") + "] " + Program.rmInternalStrings.GetString("Layout"); }
+            get { return "[" + layoutIndex.ToString("X4") + "] Layout"; }
         }
 
         public short layoutIndex;
@@ -327,14 +145,8 @@ namespace PGMEBackend
 
         public GBAROM originROM;
 
-        public bool edited
-        {
-            get { return !rawHeaderOrig.SequenceEqual(rawHeader) || !rawLayoutOrig.SequenceEqual(rawLayout) || !rawBorderOrig.SequenceEqual(rawBorder); }
-        }
-
         public MapLayout()
         {
-
         }
 
         public MapLayout(int index, int offset, GBAROM ROM)
@@ -363,61 +175,16 @@ namespace PGMEBackend
             }
         }
 
-        public void Revert()
-        {
-            rawHeader = (byte[])rawHeaderOrig.Clone();
-            rawBorder = (byte[])rawBorderOrig.Clone();
-            rawLayout = (byte[])rawLayoutOrig.Clone();
-            LoadLayoutHeaderFromRaw();
-            LoadLayoutFromRaw();
-            LoadBorderFromRaw();
-        }
-
-        public void Save()
-        {
-            WriteLayoutHeaderToRaw();
-            WriteLayoutToRaw();
-            WriteBorderToRaw();
-            rawHeaderOrig = (byte[])rawHeader.Clone();
-            rawBorderOrig = (byte[])rawBorder.Clone();
-            rawLayoutOrig = (byte[])rawLayout.Clone();
-        }
-
         public void LoadLayoutFromRaw()
         {
             layout = new short[rawLayout.Length / 2];
             Buffer.BlockCopy(rawLayout, 0, layout, 0, rawLayout.Length);
         }
 
-        public void WriteLayoutToRaw()
-        {
-            rawLayout = new byte[layout.Length * 2];
-            Buffer.BlockCopy(layout, 0, rawLayout, 0, rawLayout.Length);
-        }
-
         public void LoadBorderFromRaw()
         {
             border = new short[rawBorder.Length / 2];
             Buffer.BlockCopy(rawBorder, 0, border, 0, rawBorder.Length);
-        }
-
-        public void WriteBorderToRaw()
-        {
-            rawBorder = new byte[border.Length * 2];
-            Buffer.BlockCopy(border, 0, rawBorder, 0, rawBorder.Length);
-        }
-
-        public void PaintBlocksToMap(short[] blockArray, int x, int y, int w, int h)
-        {
-            Program.isEdited = true;
-            for (int i = 0; i < h; i++)
-            {
-                for (int j = 0; j < w; j++)
-                {
-                    if ((x + j < layoutWidth) && (y + i < layoutHeight))
-                        layout[(x + (y * layoutWidth)) + (i * layoutWidth) + j] = blockArray[(i * w) + j];
-                }
-            }
         }
 
         public void LoadLayoutHeaderFromRaw()
@@ -443,69 +210,19 @@ namespace PGMEBackend
                 buffer2 = 0;
             }
 
-            try
+            if (globalTilesetPointer != -0x8000000)
             {
-                if (globalTilesetPointer != -0x8000000)
-                {
-                    if (!Program.mapTilesets.ContainsKey(globalTilesetPointer))
-                        Program.mapTilesets.Add(globalTilesetPointer, new MapTileset(globalTilesetPointer, originROM));
-                    globalTileset = Program.mapTilesets[globalTilesetPointer];
-                }
-            }
-            catch (Exception)
-            {
-                Program.loadExceptions.Add(new TilesetLoadErrorException(string.Format(Program.rmInternalStrings.GetString("CouldNotReadTileset"), Program.rmInternalStrings.GetString("GlobalTileset"), Config.settings.HexPrefix + layoutIndex.ToString("X4"), globalTilesetPointer.ToString("X"))));
-            }
-            try
-            {
-                if (localTilesetPointer != -0x8000000)
-                {
-                    if (!Program.mapTilesets.ContainsKey(localTilesetPointer))
-                        Program.mapTilesets.Add(localTilesetPointer, new MapTileset(localTilesetPointer, originROM));
-                    localTileset = Program.mapTilesets[localTilesetPointer];
-                }
-            }
-            catch (Exception)
-            {
-                Program.loadExceptions.Add(new TilesetLoadErrorException(string.Format(Program.rmInternalStrings.GetString("CouldNotReadTileset"), Program.rmInternalStrings.GetString("LocalTileset"), Config.settings.HexPrefix + layoutIndex.ToString("X4"), globalTilesetPointer.ToString("X"))));
-            }
-        }
-
-        public void WriteLayoutHeaderToRaw()
-        {
-            if (layoutWidth != BitConverter.ToInt32(rawHeader, 0) || layoutHeight != BitConverter.ToInt32(rawHeader, 4))
-                ResizeLayout(layoutWidth, layoutHeight);
-            Buffer.BlockCopy(BitConverter.GetBytes(layoutWidth), 0, rawHeader, 0x0, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(layoutHeight), 0, rawHeader, 0x4, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(borderBlocksPointer + 0x8000000), 0, rawHeader, 0x8, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(mapDataPointer + 0x8000000), 0, rawHeader, 0xC, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(globalTilesetPointer + 0x8000000), 0, rawHeader, 0x10, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(localTilesetPointer + 0x8000000), 0, rawHeader, 0x14, 4);
-            if (Program.currentGame.RomType == "FRLG")
-            {
-                rawHeader[0x18] = borderWidth;
-                rawHeader[0x19] = borderHeight;
-                rawHeader[0x1A] = buffer1;
-                rawHeader[0x1B] = buffer2;
-            }
-        }
-
-        public void ResizeLayout(int newWidth, int newHeight)
-        {
-            short[] newLayout = new short[newWidth * newHeight];
-            for(int i = 0; i < (newHeight < BitConverter.ToInt32(rawHeader, 4) ? newHeight : BitConverter.ToInt32(rawHeader, 4)); i++)
-            {
-                for (int j = 0; j < (newWidth < BitConverter.ToInt32(rawHeader, 0) ? newWidth : BitConverter.ToInt32(rawHeader, 0)); j++)
-                {
-                    newLayout[j + (i * newWidth)] = layout[j + (i * BitConverter.ToInt32(rawHeader, 0))];
-                }
+                if (!Program.mapTilesets.ContainsKey(globalTilesetPointer))
+                    Program.mapTilesets.Add(globalTilesetPointer, new MapTileset(globalTilesetPointer, originROM));
+                globalTileset = Program.mapTilesets[globalTilesetPointer];
             }
 
-            layout = newLayout;
-            WriteLayoutToRaw();
-            Program.mainGUI.SetGLMapEditorSize(newWidth * 16, newHeight * 16);
-            Program.isEdited = true;
-            drawTiles = null;
+            if (localTilesetPointer != -0x8000000)
+            {
+                if (!Program.mapTilesets.ContainsKey(localTilesetPointer))
+                    Program.mapTilesets.Add(localTilesetPointer, new MapTileset(localTilesetPointer, originROM));
+                localTileset = Program.mapTilesets[localTilesetPointer];
+            }
         }
 
         public class VisualMapTile {
@@ -627,11 +344,6 @@ namespace PGMEBackend
                                     else
                                         Surface.DrawRect(xPos - xoff, yPos - yoff, 16, 16, Color.Black);
                                 }
-
-                                if (Program.showingPerms)
-                                {
-                                    Program.glMapEditor.movementPerms.Draw(movementPerm, xPos + j * 16 - xoff, yPos + i * 16 - yoff, scale, (((Program.mainGUI.PermTransPreviewValue() >= 0) ? Program.mainGUI.PermTransPreviewValue() : Config.settings.PermissionTranslucency) * 255) / 100);
-                                }
                             }
                         }
 
@@ -654,15 +366,6 @@ namespace PGMEBackend
             }
 
             GL.Enable(EnableCap.Blend);
-
-            /*
-            foreach (var v in drawTiles)
-            {
-                Surface.SetTexture(null);
-                Surface.SetColor(Color.Cyan);
-                Surface.DrawOutlineRect(v.xpos * 16, v.ypos * 16, v.buffer.Width, v.buffer.Height);
-            }
-            // */
 
             Surface.SetTexture(null);
         }
@@ -694,46 +397,6 @@ namespace PGMEBackend
             }
 
             Surface.SetTexture(null);
-        }
-    }
-
-    public class MapLayoutLoadErrorException : Exception
-    {
-        public MapLayoutLoadErrorException()
-        {
-
-        }
-
-        public MapLayoutLoadErrorException(string message)
-            : base(message)
-        {
-
-        }
-
-        public MapLayoutLoadErrorException(string message, Exception inner)
-            : base(message, inner)
-        {
-
-        }
-    }
-
-    public class TilesetLoadErrorException : Exception
-    {
-        public TilesetLoadErrorException()
-        {
-
-        }
-
-        public TilesetLoadErrorException(string message)
-            : base(message)
-        {
-
-        }
-
-        public TilesetLoadErrorException(string message, Exception inner)
-            : base(message, inner)
-        {
-
         }
     }
 }

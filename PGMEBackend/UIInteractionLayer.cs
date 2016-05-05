@@ -17,7 +17,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Awesome Map Editor. If not, see <http://www.gnu.org/licenses/>.
 
-using PGMEBackend.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,12 +29,7 @@ namespace PGMEBackend
     {
         void SetTitleText(string title);
 
-        string ShowMessageBox(string body, string title);
-        string ShowMessageBox(string body, string title, string buttons);
-        string ShowMessageBox(string body, string title, string buttons, string icon);
-
         string ShowFileOpenDialog(string title, string filter, bool multiselect);
-        void RefreshBorderBlocksControl();
         void EnableControlsOnROMLoad();
         void EnableControlsOnMapLoad();
 
@@ -48,11 +42,5 @@ namespace PGMEBackend
 
         void SetGLMapEditorSize(int w, int h);
         void SetGLBlockChooserSize(int w, int h);
-
-        void RefreshMapEditorControl();
-        void RefreshBlockEditorControl();
-        void ScrollBlockChooserToBlock(int blockNum);
-
-        int PermTransPreviewValue();
     }
 }

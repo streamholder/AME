@@ -74,14 +74,6 @@ namespace PGMEWindowsUI
             this.glControlPermsChooser = new OpenTK.GLControl();
             this.mainToolStrip = new System.Windows.Forms.ToolStrip();
             this.toolStripOpen = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripBlockEditor = new System.Windows.Forms.ToolStripButton();
-            this.toolStripConnectionEditor = new System.Windows.Forms.ToolStripButton();
-            this.toolStripWorldMapEditor = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripPluginManager = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripButton9 = new System.Windows.Forms.ToolStripButton();
             this.mainStatusStrip = new System.Windows.Forms.StatusStrip();
             ((System.ComponentModel.ISupportInitialize)(this.splitMapListAndPaint)).BeginInit();
             this.splitMapListAndPaint.Panel1.SuspendLayout();
@@ -138,7 +130,6 @@ namespace PGMEWindowsUI
             this.mapTilesetToolStripMenuItem});
             resources.ApplyResources(this.tsddbMapSortOrder, "tsddbMapSortOrder");
             this.tsddbMapSortOrder.Name = "tsddbMapSortOrder";
-            this.tsddbMapSortOrder.Click += new System.EventHandler(this.tsddbMapSortOrder_Click);
             // 
             // mapNameToolStripMenuItem
             // 
@@ -146,7 +137,6 @@ namespace PGMEWindowsUI
             resources.ApplyResources(this.mapNameToolStripMenuItem, "mapNameToolStripMenuItem");
             this.mapNameToolStripMenuItem.Name = "mapNameToolStripMenuItem";
             this.mapNameToolStripMenuItem.Tag = "Name";
-            this.mapNameToolStripMenuItem.Click += new System.EventHandler(this.mapNameToolStripMenuItem_Click);
             // 
             // mapBankToolStripMenuItem
             // 
@@ -154,7 +144,6 @@ namespace PGMEWindowsUI
             resources.ApplyResources(this.mapBankToolStripMenuItem, "mapBankToolStripMenuItem");
             this.mapBankToolStripMenuItem.Name = "mapBankToolStripMenuItem";
             this.mapBankToolStripMenuItem.Tag = "Bank";
-            this.mapBankToolStripMenuItem.Click += new System.EventHandler(this.mapBankToolStripMenuItem_Click);
             // 
             // mapLayoutToolStripMenuItem
             // 
@@ -162,7 +151,6 @@ namespace PGMEWindowsUI
             this.mapLayoutToolStripMenuItem.Name = "mapLayoutToolStripMenuItem";
             resources.ApplyResources(this.mapLayoutToolStripMenuItem, "mapLayoutToolStripMenuItem");
             this.mapLayoutToolStripMenuItem.Tag = "Layout";
-            this.mapLayoutToolStripMenuItem.Click += new System.EventHandler(this.mapLayoutToolStripMenuItem_Click);
             // 
             // mapTilesetToolStripMenuItem
             // 
@@ -170,7 +158,6 @@ namespace PGMEWindowsUI
             resources.ApplyResources(this.mapTilesetToolStripMenuItem, "mapTilesetToolStripMenuItem");
             this.mapTilesetToolStripMenuItem.Name = "mapTilesetToolStripMenuItem";
             this.mapTilesetToolStripMenuItem.Tag = "Tileset";
-            this.mapTilesetToolStripMenuItem.Click += new System.EventHandler(this.mapTilesetToolStripMenuItem_Click);
             // 
             // tsMapFilter
             // 
@@ -183,10 +170,7 @@ namespace PGMEWindowsUI
             // 
             resources.ApplyResources(this.mapListTreeView, "mapListTreeView");
             this.mapListTreeView.Name = "mapListTreeView";
-            this.mapListTreeView.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.mapListTreeView_BeforeCollapse);
-            this.mapListTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.mapListTreeView_BeforeExpand);
             this.mapListTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.mapListTreeView_NodeMouseDoubleClick);
-            this.mapListTreeView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.mapListTreeView_KeyDown);
             // 
             // mainTabControl
             // 
@@ -194,7 +178,6 @@ namespace PGMEWindowsUI
             resources.ApplyResources(this.mainTabControl, "mainTabControl");
             this.mainTabControl.Name = "mainTabControl";
             this.mainTabControl.SelectedIndex = 0;
-            this.mainTabControl.SelectedIndexChanged += new System.EventHandler(this.mainTabControl_SelectedIndexChanged);
             // 
             // mapTabPage
             // 
@@ -226,13 +209,6 @@ namespace PGMEWindowsUI
             this.glControlBorderBlocks.VSync = false;
             this.glControlBorderBlocks.Load += new System.EventHandler(this.glControlBorderBlocks_Load);
             this.glControlBorderBlocks.Paint += new System.Windows.Forms.PaintEventHandler(this.glControlBorderBlocks_Paint);
-            this.glControlBorderBlocks.KeyDown += new System.Windows.Forms.KeyEventHandler(this.glControlBorderBlocks_KeyDown);
-            this.glControlBorderBlocks.KeyUp += new System.Windows.Forms.KeyEventHandler(this.glControlBorderBlocks_KeyUp);
-            this.glControlBorderBlocks.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControlBorderBlocks_MouseDown);
-            this.glControlBorderBlocks.MouseEnter += new System.EventHandler(this.glControlBorderBlocks_MouseEnter);
-            this.glControlBorderBlocks.MouseLeave += new System.EventHandler(this.glControlBorderBlocks_MouseLeave);
-            this.glControlBorderBlocks.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControlBorderBlocks_MouseMove);
-            this.glControlBorderBlocks.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControlBorderBlocks_MouseUp);
             // 
             // mapEditorPanel
             // 
@@ -246,7 +222,6 @@ namespace PGMEWindowsUI
             this.mapPaintPanel.BackColor = System.Drawing.Color.Transparent;
             this.mapPaintPanel.Controls.Add(this.glControlMapEditor);
             this.mapPaintPanel.Name = "mapPaintPanel";
-            this.mapPaintPanel.Scroll += new System.Windows.Forms.ScrollEventHandler(this.panel8_Scroll);
             // 
             // glControlMapEditor
             // 
@@ -257,11 +232,6 @@ namespace PGMEWindowsUI
             this.glControlMapEditor.VSync = false;
             this.glControlMapEditor.Load += new System.EventHandler(this.glControlMapEditor_Load);
             this.glControlMapEditor.Paint += new System.Windows.Forms.PaintEventHandler(this.glControlMapEditor_Paint);
-            this.glControlMapEditor.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControlMapEditor_MouseDown);
-            this.glControlMapEditor.MouseEnter += new System.EventHandler(this.glControlMapEditor_MouseEnter);
-            this.glControlMapEditor.MouseLeave += new System.EventHandler(this.glControlMapEditor_MouseLeave);
-            this.glControlMapEditor.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControlMapEditor_MouseMove);
-            this.glControlMapEditor.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControlMapEditor_MouseUp);
             // 
             // paintTabControl
             // 
@@ -270,7 +240,6 @@ namespace PGMEWindowsUI
             this.paintTabControl.Controls.Add(this.movementTabPage);
             this.paintTabControl.Name = "paintTabControl";
             this.paintTabControl.SelectedIndex = 0;
-            this.paintTabControl.SelectedIndexChanged += new System.EventHandler(this.paintTabControl_SelectedIndexChanged);
             // 
             // blocksTabPage
             // 
@@ -285,7 +254,6 @@ namespace PGMEWindowsUI
             this.blockPaintPanel.BackColor = System.Drawing.Color.Transparent;
             this.blockPaintPanel.Controls.Add(this.glControlBlocks);
             this.blockPaintPanel.Name = "blockPaintPanel";
-            this.blockPaintPanel.Scroll += new System.Windows.Forms.ScrollEventHandler(this.blockPaintPanel_Scroll);
             // 
             // glControlBlocks
             // 
@@ -295,11 +263,6 @@ namespace PGMEWindowsUI
             this.glControlBlocks.VSync = false;
             this.glControlBlocks.Load += new System.EventHandler(this.glControlBlocks_Load);
             this.glControlBlocks.Paint += new System.Windows.Forms.PaintEventHandler(this.glControlBlocks_Paint);
-            this.glControlBlocks.MouseDown += new System.Windows.Forms.MouseEventHandler(this.glControlBlocks_MouseDown);
-            this.glControlBlocks.MouseEnter += new System.EventHandler(this.glControlBlocks_MouseEnter);
-            this.glControlBlocks.MouseLeave += new System.EventHandler(this.glControlBlocks_MouseLeave);
-            this.glControlBlocks.MouseMove += new System.Windows.Forms.MouseEventHandler(this.glControlBlocks_MouseMove);
-            this.glControlBlocks.MouseUp += new System.Windows.Forms.MouseEventHandler(this.glControlBlocks_MouseUp);
             // 
             // movementTabPage
             // 
@@ -326,71 +289,17 @@ namespace PGMEWindowsUI
             this.mainToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.mainToolStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.mainToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripOpen,
-            this.toolStripSeparator3,
-            this.toolStripBlockEditor,
-            this.toolStripConnectionEditor,
-            this.toolStripWorldMapEditor,
-            this.toolStripSeparator4,
-            this.toolStripPluginManager,
-            this.toolStripSeparator5,
-            this.toolStripButton9});
+            this.toolStripOpen});
             resources.ApplyResources(this.mainToolStrip, "mainToolStrip");
             this.mainToolStrip.Name = "mainToolStrip";
             this.mainToolStrip.Stretch = true;
-            this.mainToolStrip.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolStrip1_ItemClicked);
             // 
             // toolStripOpen
             // 
             this.toolStripOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripOpen, "toolStripOpen");
             this.toolStripOpen.Name = "toolStripOpen";
-            this.toolStripOpen.Click += new System.EventHandler(this.toolStripButton1_Click);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            resources.ApplyResources(this.toolStripSeparator3, "toolStripSeparator3");
-            // 
-            // toolStripBlockEditor
-            // 
-            this.toolStripBlockEditor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripBlockEditor, "toolStripBlockEditor");
-            this.toolStripBlockEditor.Name = "toolStripBlockEditor";
-            // 
-            // toolStripConnectionEditor
-            // 
-            this.toolStripConnectionEditor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripConnectionEditor, "toolStripConnectionEditor");
-            this.toolStripConnectionEditor.Name = "toolStripConnectionEditor";
-            // 
-            // toolStripWorldMapEditor
-            // 
-            this.toolStripWorldMapEditor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripWorldMapEditor, "toolStripWorldMapEditor");
-            this.toolStripWorldMapEditor.Name = "toolStripWorldMapEditor";
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            resources.ApplyResources(this.toolStripSeparator4, "toolStripSeparator4");
-            // 
-            // toolStripPluginManager
-            // 
-            this.toolStripPluginManager.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripPluginManager, "toolStripPluginManager");
-            this.toolStripPluginManager.Name = "toolStripPluginManager";
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            resources.ApplyResources(this.toolStripSeparator5, "toolStripSeparator5");
-            // 
-            // toolStripButton9
-            // 
-            this.toolStripButton9.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButton9, "toolStripButton9");
-            this.toolStripButton9.Name = "toolStripButton9";
+            this.toolStripOpen.Click += new System.EventHandler(this.toolStripOpen_Click);
             // 
             // mainStatusStrip
             // 
@@ -407,10 +316,6 @@ namespace PGMEWindowsUI
             this.Controls.Add(this.mainToolStrip);
             this.KeyPreview = true;
             this.Name = "MainWindow";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainWindow_FormClosing);
-            this.Load += new System.EventHandler(this.MainWindow_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainWindow_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MainWindow_KeyUp);
             this.splitMapListAndPaint.Panel1.ResumeLayout(false);
             this.splitMapListAndPaint.Panel1.PerformLayout();
             this.splitMapListAndPaint.Panel2.ResumeLayout(false);
@@ -439,14 +344,6 @@ namespace PGMEWindowsUI
         #endregion
         private System.Windows.Forms.ToolStrip mainToolStrip;
         private System.Windows.Forms.ToolStripButton toolStripOpen;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton toolStripBlockEditor;
-        private System.Windows.Forms.ToolStripButton toolStripConnectionEditor;
-        private System.Windows.Forms.ToolStripButton toolStripWorldMapEditor;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-        private System.Windows.Forms.ToolStripButton toolStripPluginManager;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.ToolStripButton toolStripButton9;
         private System.Windows.Forms.StatusStrip mainStatusStrip;
         private System.Windows.Forms.TreeView mapListTreeView;
         private System.Windows.Forms.SplitContainer splitMapListAndPaint;

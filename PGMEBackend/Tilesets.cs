@@ -41,8 +41,6 @@ namespace PGMEBackend
         public int imagePointer;
         public int imagePalsPointer;
         public int blocksPointer;
-        public int behaviorPointer;
-        public int animationPointer;
 
         public Bitmap[] image;
         public Spritesheet[] tileSheets;
@@ -64,27 +62,12 @@ namespace PGMEBackend
             imagePalsPointer = originROM.ReadPointer(offset + 0x8);
             blocksPointer = originROM.ReadPointer(offset + 0xC);
 
-            if (Program.currentGame.RomType == "FRLG")
-            {
-                animationPointer = originROM.ReadPointer(offset + 0x10);
-                behaviorPointer = originROM.ReadPointer(offset + 0x14);
-            }
-            else if (Program.currentGame.RomType == "E")
-            {
-                behaviorPointer = originROM.ReadPointer(offset + 0x10);
-                animationPointer = originROM.ReadPointer(offset + 0x14);
-            }
-
-            blockSet = new Blockset(blocksPointer, behaviorPointer, (isSecondary & 1) == 1, originROM);
+            blockSet = new Blockset(blocksPointer, (isSecondary & 1) == 1, originROM);
         }
 
         public void Initialize(MapLayout mapLayout)
         {
             image = new Bitmap[16];
-
-            //layout = new MapLayout(mapDataPointer, ROM);
-
-            //name = "[" + currentBank.ToString("X2") + ", " + currentMap.ToString("X2") + "] " + Program.mapNames[mapNameIndex].Name;
 
             int width = 128;
             int height = Program.currentGame.MainTSSize * 8;
@@ -117,7 +100,7 @@ namespace PGMEBackend
         public Block[] blocks;
         public GBAROM originROM;
 
-        public Blockset(int blocksPointer, int behaviorsPointer,  bool isSecondary, GBAROM ROM)
+        public Blockset(int blocksPointer,  bool isSecondary, GBAROM ROM)
         {
             originROM = ROM;
 
@@ -128,18 +111,7 @@ namespace PGMEBackend
 
             for (int i = 0; i < blocks.Length; i++)
             {
-                byte[] rawBehaviorData = null;
                 int isTriple = 0;
-                if (Program.currentGame.RomType == "FRLG")
-                    rawBehaviorData = originROM.GetData(behaviorsPointer + (i * 4), 4);
-                else if (Program.currentGame.RomType == "E")
-                    rawBehaviorData = originROM.GetData(behaviorsPointer + (i * 2), 2);
-
-                Behavior behavior = new Behavior(rawBehaviorData);
-                if (behavior.GetBackground() == 3)
-                    isTriple = 1;
-                else if (behavior.GetBackground() == 4)
-                    isTriple = 2;
 
                 byte[] rawTileData = originROM.GetData(blocksPointer + (i * 16) + ((isTriple == 2) ? 8 : 0), ((isTriple == 0) ? 16 : 24));
 
@@ -150,7 +122,7 @@ namespace PGMEBackend
                 for (int j = 0; j < tiles.Length; j++)
                     tiles[j] = new Tile(tileData[j] & 0x3FF, (tileData[j] & 0xF000) >> 12, (tileData[j] & 0x400) == 0x400, (tileData[j] & 0x800) == 0x800);
                 
-                blocks[i] = new Block(tiles,behavior);
+                blocks[i] = new Block(tiles);
             }
         }
 
@@ -165,12 +137,10 @@ namespace PGMEBackend
     public class Block
     {
         public Tile[] tileArray;
-        public Behavior behaviors;
 
-        public Block(Tile[] tiles, Behavior behave)
+        public Block(Tile[] tiles)
         {
             tileArray = tiles;
-            behaviors = behave;
         }
 
         public void Draw(Spritesheet[] globalSheets, Spritesheet[] localSheets, int xPos, int yPos, double scale)
@@ -220,41 +190,5 @@ namespace PGMEBackend
                     Surface.DrawRect(xPos, yPos, 8, 8, Color.Black);
             }
         }
-    }
-
-    public class Behavior
-    {
-        public byte[] rawBehavior;
-
-        public int actionByte;
-        public int actionByte2;
-        public int backgroundByte;
-        public int backgroundByte2;
-
-        public Behavior(byte[] raw)
-        {
-            rawBehavior = raw;
-            if (rawBehavior.Length == 2)
-            {
-                actionByte = rawBehavior[0];
-                backgroundByte = rawBehavior[1];
-            }
-            else
-            {
-                actionByte = rawBehavior[0];
-                actionByte2 = rawBehavior[1];
-                backgroundByte = rawBehavior[2];
-                backgroundByte2 = rawBehavior[3];
-            }
-        }
-
-        public int GetBackground()
-        {
-            if (rawBehavior.Length == 4)
-                return (backgroundByte2 >> 4) & 0xF;
-            else
-                return (backgroundByte >> 4) & 0xF;
-        }
-
     }
 }

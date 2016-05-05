@@ -103,63 +103,6 @@ namespace PGMEBackend.GLControls
                 }
             }
         }
-        
-        public void MouseMove(int x, int y)
-        {
-            int oldMouseX = mouseX;
-            int oldMouseY = mouseY;
-
-            mouseX = x / 16;
-            mouseY = y / 16;
-
-            if (mouseX >= width / 16)
-                mouseX = (width - 1) / 16;
-            if (mouseY >= height / 16)
-                mouseY = (height - 1) / 16;
-
-            if (mouseX < 0)
-                mouseX = 0;
-            if (mouseY < 0)
-                mouseY = 0;
-
-            Program.glBlockChooser.editorSelectWidth = Math.Abs(Program.glBlockChooser.editorSelectWidth);
-            Program.glBlockChooser.editorSelectHeight = Math.Abs(Program.glBlockChooser.editorSelectHeight);
-            endMouseX = mouseX + Program.glBlockChooser.editorSelectWidth - 1;
-            endMouseY = mouseY + Program.glBlockChooser.editorSelectHeight - 1;
-        }
-
-        public void MouseLeave()
-        {
-            mouseX = -1;
-            mouseY = -1;
-            endMouseX = -1;
-            endMouseY = -1;
-        }
-
-        [Obsolete("Now handled by undo code")]
-        void Paint()
-        {
-            // insert painting code
-            for (int j = mouseY; j <= mouseY + Program.glBlockChooser.editorSelectHeight; j++)
-            {
-                for (int i = mouseX; i <= mouseX + Program.glBlockChooser.editorSelectWidth; i++)
-                {
-                    foreach (var v in Program.currentLayout.drawTiles)
-                    {
-                        if (v.Redraw)
-                            continue;
-                        if (i < v.xpos + v.Width && i >= v.xpos && j >= v.ypos && j < v.ypos + v.Height)
-                        {
-                            v.Redraw = true;
-                            Console.WriteLine("Redrawing " + v.buffer.FBOHandle);
-                            continue;
-                        }
-                    }
-                }
-            }
-        }
-
-        short[] oldBorder;
 
         public void PaintBlocksToBorder(short[] blockArray, int x, int y, int w, int h)
         {
