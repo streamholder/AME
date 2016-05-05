@@ -504,7 +504,6 @@ namespace PGMEBackend
             layout = newLayout;
             WriteLayoutToRaw();
             Program.mainGUI.SetGLMapEditorSize(newWidth * 16, newHeight * 16);
-            Program.mainGUI.SetGLEntityEditorSize(newWidth * 16, newHeight * 16);
             Program.isEdited = true;
             drawTiles = null;
         }

@@ -19,7 +19,6 @@ namespace Nintenlord.ROMHacking.GBA.Graphics
             {
                 return ToBitmap(pointer, length, palette, width, mode, out emptyGraphicBlocks);
             }
-            Bitmap b;
             
         }
 
@@ -446,7 +445,6 @@ namespace Nintenlord.ROMHacking.GBA.Graphics
         {
             byte[][] result;
             Bitmap quantazised;
-            BitmapData bmp;
             
             switch (mode)
             {

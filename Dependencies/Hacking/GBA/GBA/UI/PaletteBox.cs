@@ -10,7 +10,9 @@ namespace Nintenlord.GBA_Graphics_Editor.Forms.Controls
         public Size TileSize
         {
             get { return tileSize; }
+            set { tileSize = value; }
         }
+
         public Size AmountOfTiles
         {
             get 

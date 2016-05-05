@@ -14,8 +14,6 @@ namespace PGMEBackend.GLControls
         int width = 0;
         int height = 0;
 
-        public MapEditorTools tool = MapEditorTools.None;
-
         public int mouseX = -1;
         public int mouseY = -1;
         public int endMouseX = -1;
@@ -124,19 +122,10 @@ namespace PGMEBackend.GLControls
             if (mouseY < 0)
                 mouseY = 0;
 
-            if (tool == MapEditorTools.Pencil && (mouseX != oldMouseX || mouseY != oldMouseY))
-            {
-                PaintBlocksToBorder(Program.glBlockChooser.selectArray, mouseX, mouseY, Program.glBlockChooser.editorSelectWidth, Program.glBlockChooser.editorSelectHeight);
-                //Paint();
-            }
-
-            if (tool != MapEditorTools.Eyedropper)
-            {
-                Program.glBlockChooser.editorSelectWidth = Math.Abs(Program.glBlockChooser.editorSelectWidth);
-                Program.glBlockChooser.editorSelectHeight = Math.Abs(Program.glBlockChooser.editorSelectHeight);
-                endMouseX = mouseX + Program.glBlockChooser.editorSelectWidth - 1;
-                endMouseY = mouseY + Program.glBlockChooser.editorSelectHeight - 1;
-            }
+            Program.glBlockChooser.editorSelectWidth = Math.Abs(Program.glBlockChooser.editorSelectWidth);
+            Program.glBlockChooser.editorSelectHeight = Math.Abs(Program.glBlockChooser.editorSelectHeight);
+            endMouseX = mouseX + Program.glBlockChooser.editorSelectWidth - 1;
+            endMouseY = mouseY + Program.glBlockChooser.editorSelectHeight - 1;
         }
 
         public void MouseLeave()
@@ -207,68 +196,6 @@ namespace PGMEBackend.GLControls
             }
         }
 
-        public void MouseDown(MapEditorTools Tool)
-        {
-            if (tool == MapEditorTools.None)
-            {
-                tool = Tool;
-                if (tool == MapEditorTools.Pencil)
-                {
-                    rectColor = rectPaintColor;
-                    oldBorder = new short[Program.currentLayout.borderWidth * Program.currentLayout.borderHeight];
-                    Buffer.BlockCopy(Program.currentLayout.border, 0, oldBorder, 0, Program.currentLayout.border.Length);
-                    PaintBlocksToBorder(Program.glBlockChooser.selectArray, mouseX, mouseY, Program.glBlockChooser.editorSelectWidth, Program.glBlockChooser.editorSelectHeight);
-                    //Paint();
-                }
-                else if (tool == MapEditorTools.Eyedropper)
-                {
-                    Program.glBlockChooser.editorSelectWidth = 1;
-                    Program.glBlockChooser.editorSelectHeight = 1;
-                    endMouseX = mouseX;
-                    endMouseY = mouseY;
-                    rectColor = rectSelectColor;
-                }
-                else if (tool == MapEditorTools.Fill)
-                {
-                    if (Program.glBlockChooser.selectArray.Length == 1)
-                    {
-                        short originalBlock = Program.currentLayout.border[(mouseX + (mouseY * Program.currentLayout.borderWidth))];
-                        short newBlock = Program.glBlockChooser.selectArray[0];
-                        rectColor = rectPaintColor;
-                        if (originalBlock != newBlock)
-                        {
-                            oldBorder = new short[Program.currentLayout.borderWidth * Program.currentLayout.borderHeight];
-                            Buffer.BlockCopy(Program.currentLayout.border, 0, oldBorder, 0, Program.currentLayout.border.Length);
-                            FillBlocks(mouseX, mouseY, originalBlock, newBlock);
-                            StoreChangesToUndoBufferAndRedraw();
-                        }
-                    }
-                }
-                else if (tool == MapEditorTools.FillAll)
-                {
-                    if (Program.glBlockChooser.selectArray.Length == 1)
-                    {
-                        short originalBlock = Program.currentLayout.border[(mouseX + (mouseY * Program.currentLayout.layoutWidth))];
-                        short newBlock = Program.glBlockChooser.selectArray[0];
-                        if (originalBlock != newBlock)
-                        {
-                            rectColor = rectPaintColor;
-                            oldBorder = new short[Program.currentLayout.borderWidth * Program.currentLayout.borderHeight];
-                            Buffer.BlockCopy(Program.currentLayout.border, 0, oldBorder, 0, Program.currentLayout.border.Length);
-                            for (int i = 0; i < Program.currentLayout.border.Length; i++)
-                            {
-                                if (Program.currentLayout.border[i] == originalBlock)
-                                    Program.currentLayout.border[i] = newBlock;
-                            }
-                            StoreChangesToUndoBufferAndRedraw();
-                        }
-                    }
-                }
-                else
-                    rectColor = rectDefaultColor;
-            }
-        }
-
         public void FillBlocks(int x, int y, short originalBlock, short newBlock)
         {
             if (x >= 0 && x < Program.currentLayout.borderWidth &&
@@ -280,141 +207,6 @@ namespace PGMEBackend.GLControls
                 FillBlocks(x, y - 1, originalBlock, newBlock);
                 FillBlocks(x - 1, y, originalBlock, newBlock);
                 FillBlocks(x + 1, y, originalBlock, newBlock);
-            }
-        }
-
-        public void StoreChangesToUndoBufferAndRedraw()
-        {
-            int x = int.MaxValue;
-            int y = int.MaxValue;
-            int w = -1;
-            int h = -1;
-
-            for (int i = 0; i < oldBorder.Length; i++)
-            {
-                if (oldBorder[i] != Program.currentLayout.border[i])
-                {
-                    if (i % Program.currentLayout.borderWidth < x)
-                        x = i % Program.currentLayout.borderWidth;
-                    if (i / Program.currentLayout.borderWidth < y)
-                        y = i / Program.currentLayout.borderWidth;
-                }
-            }
-
-            if (x < int.MaxValue && y < int.MaxValue)
-            {
-                for (int i = oldBorder.Length - 1; i >= 0; i--)
-                {
-                    if (oldBorder[i] != Program.currentLayout.border[i])
-                    {
-                        if (i % Program.currentLayout.borderWidth - x + 1 > w)
-                            w = i % Program.currentLayout.borderWidth - x + 1;
-                        if (i / Program.currentLayout.borderWidth - y + 1 > h)
-                            h = i / Program.currentLayout.borderWidth - y + 1;
-                    }
-                }
-
-                if (w > 0 && h > 0)
-                {
-                    short[] oldData = new short[w * h];
-                    short[] newData = new short[w * h];
-                    for (int k = 0; k < h; k++)
-                    {
-                        for (int l = 0; l < w; l++)
-                        {
-                            if ((x + l < Program.currentLayout.borderWidth) && (y + k < Program.currentLayout.borderHeight))
-                            {
-                                oldData[(k * w) + l] = oldBorder[(x + (y * Program.currentLayout.borderWidth)) + (k * Program.currentLayout.borderWidth) + l];
-                                newData[(k * w) + l] = Program.currentLayout.border[(x + (y * Program.currentLayout.borderWidth)) + (k * Program.currentLayout.borderWidth) + l];
-                            }
-                        }
-                    }
-                    
-                    UndoManager.Add(new Undo.PaintUndo(oldData, newData, x, y, w, h), false);
-                }
-            }
-        }
-
-        public void MouseUp(MapEditorTools Tool)
-        {
-            if (tool == Tool)
-            {
-                if (tool == MapEditorTools.Eyedropper)
-                {
-                    Program.glBlockChooser.editorSelectWidth = Math.Abs(mouseX - endMouseX) + 1;
-                    Program.glBlockChooser.editorSelectHeight = Math.Abs(mouseY - endMouseY) + 1;
-
-                    Program.glBlockChooser.selectArray = new short[Program.glBlockChooser.editorSelectWidth * Program.glBlockChooser.editorSelectHeight];
-
-                    for (int i = 0; i < Program.glBlockChooser.editorSelectHeight; i++)
-                        for (int j = 0; j < Program.glBlockChooser.editorSelectWidth; j++)
-                            Program.glBlockChooser.selectArray[(i * Program.glBlockChooser.editorSelectWidth) + j] = Program.currentLayout.border[(((mouseX > endMouseX) ? endMouseX : mouseX) + (((mouseY > endMouseY) ? endMouseY : mouseY) * Program.currentLayout.borderWidth)) + (i * Program.currentLayout.borderWidth) + j];
-
-                    /*
-                    foreach (var item in selectArray)
-                    {
-                        Console.WriteLine(item.ToString("X4"));
-                    }*/
-
-                    if (Program.glBlockChooser.editorSelectWidth == 1 && Program.glBlockChooser.editorSelectHeight == 1)
-                        Program.glBlockChooser.SelectBlock(Program.glBlockChooser.selectArray[0] & 0x3FF);
-
-                    else if (Program.glBlockChooser.editorSelectWidth > 1 || Program.glBlockChooser.editorSelectHeight > 1)
-                        Program.glBlockChooser.SelectBlock(-1);
-                }
-                else if (tool == MapEditorTools.Pencil)
-                {
-                    int x = int.MaxValue;
-                    int y = int.MaxValue;
-                    int w = -1;
-                    int h = -1;
-
-                    for (int i = 0; i < oldBorder.Length; i++)
-                    {
-                        if (oldBorder[i] != Program.currentLayout.border[i])
-                        {
-                            if (i % Program.currentLayout.borderWidth < x)
-                                x = i % Program.currentLayout.borderWidth;
-                            if (i / Program.currentLayout.borderWidth < y)
-                                y = i / Program.currentLayout.borderWidth;
-                        }
-                    }
-
-                    if (x < int.MaxValue && y < int.MaxValue)
-                    {
-                        for (int i = oldBorder.Length - 1; i >= 0; i--)
-                        {
-                            if (oldBorder[i] != Program.currentLayout.border[i])
-                            {
-                                if (i % Program.currentLayout.borderWidth - x + 1 > w)
-                                    w = i % Program.currentLayout.borderWidth - x + 1;
-                                if (i / Program.currentLayout.borderWidth - y + 1 > h)
-                                    h = i / Program.currentLayout.borderWidth - y + 1;
-                            }
-                        }
-
-                        if (w > 0 && h > 0)
-                        {
-                            short[] oldData = new short[w * h];
-                            short[] newData = new short[w * h];
-                            for (int k = 0; k < h; k++)
-                            {
-                                for (int l = 0; l < w; l++)
-                                {
-                                    if ((x + l < Program.currentLayout.borderWidth) && (y + k < Program.currentLayout.borderHeight))
-                                    {
-                                        oldData[(k * w) + l] = oldBorder[(x + (y * Program.currentLayout.borderWidth)) + (k * Program.currentLayout.borderWidth) + l];
-                                        newData[(k * w) + l] = Program.currentLayout.border[(x + (y * Program.currentLayout.borderWidth)) + (k * Program.currentLayout.borderWidth) + l];
-                                    }
-                                }
-                            }
-                            UndoManager.Add(new Undo.PaintBorderUndo(oldData, newData, x, y, w, h), false);
-                        }
-                    }
-                }
-
-                tool = MapEditorTools.None;
-                rectColor = rectDefaultColor;
             }
         }
     }

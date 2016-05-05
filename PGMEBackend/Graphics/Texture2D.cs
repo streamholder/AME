@@ -80,7 +80,6 @@ namespace PGMEBackend
 
         public static Texture2D Load(Bitmap TextureBitmap, TextureFilteringMode mode)
         {
-            int id;
             Texture2D Texture;// = new Texture2D();
             BitmapData TextureData =
                     TextureBitmap.LockBits(
@@ -95,7 +94,6 @@ namespace PGMEBackend
 
         public static Texture2D Load(string path, TextureFilteringMode mode)
         {
-            int id;
             Console.WriteLine("Attemtping to load texture at '" + path + "'");
             if (System.IO.File.Exists(path))
             {

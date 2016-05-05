@@ -29,21 +29,18 @@ namespace PGMEBackend
     public interface UIInteractionLayer
     {
         void SetTitleText(string title);
-        void SetLoadingStatus(string status);
 
         string ShowMessageBox(string body, string title);
         string ShowMessageBox(string body, string title, string buttons);
         string ShowMessageBox(string body, string title, string buttons, string icon);
 
         string ShowFileOpenDialog(string title, string filter, bool multiselect);
-
+        void RefreshBorderBlocksControl();
         void EnableControlsOnROMLoad();
         void EnableControlsOnMapLoad();
 
         void LoadMapNodes();
         void ClearMapNodes();
-
-        void LoadHeaderTabDropdowns();
 
         void QuitApplication(int code);
 
@@ -51,33 +48,11 @@ namespace PGMEBackend
 
         void SetGLMapEditorSize(int w, int h);
         void SetGLBlockChooserSize(int w, int h);
-        void SetGLBorderBlocksSize(int w, int h);
-        void SetGLEntityEditorSize(int w, int h);
 
         void RefreshMapEditorControl();
         void RefreshBlockEditorControl();
-        void RefreshPermsChooserControl();
-        void RefreshBorderBlocksControl();
-        void RefreshEntityEditorControl();
         void ScrollBlockChooserToBlock(int blockNum);
-        void ScrollPermChooserToPerm(int permNum);
 
         int PermTransPreviewValue();
-
-        void AddRecentFile(string fname);
-
-        void LoadEntityView(Entity entity);
-        void LoadEntityView(Entity.EntityType entityType, int entityNum);
-        void MultipleEntitiesSelected();
-
-        void FollowWarp(int mapBank, int mapNum, int warpNum);
-        void FollowWarp(Warp warp);
-
-        int LaunchScriptEditor(int scriptOffset);
-        
-        Entity CreateNewEntity(Entity.EntityType entityType, int x = 0, int y = 0);
-        Entity CreateNewEntity(int x = 0, int y = 0);
-        void CreateNewEntity(Entity entity);
-        bool DeleteEntity(Entity entity);
     }
 }

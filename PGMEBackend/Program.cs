@@ -63,9 +63,7 @@ namespace PGMEBackend
 
         public static GLControls.GLMapEditor glMapEditor;
         public static GLControls.GLBlockChooser glBlockChooser;
-        public static GLControls.GLPermsChooser glPermsChooser;
         public static GLControls.GLBorderBlocks glBorderBlocks;
-        public static GLControls.GLEntityEditor glEntityEditor;
 
         public static bool showingPerms = false;
 
@@ -119,8 +117,6 @@ namespace PGMEBackend
             if (OpenROM(filename) == 0)
             {
                 isEdited = false;
-
-                mainGUI.AddRecentFile(filename);
                 currentFilePath = filename;
                 currentFileName = Path.GetFileName(filename);
 
@@ -141,7 +137,6 @@ namespace PGMEBackend
                 mainGUI.EnableControlsOnROMLoad();
                 mainGUI.LoadMapNodes();
                 currentGame.Songs = Config.musicLists.Songs[currentGame.RomType];
-                mainGUI.LoadHeaderTabDropdowns();
 
                 //Stop timer
                 loadTime.Stop();
@@ -315,7 +310,6 @@ namespace PGMEBackend
             }
 
             Stopwatch loadTime = new Stopwatch();
-            UndoManager.Clear();
             loadTime.Start();
 
             mainGUI.EnableControlsOnMapLoad();

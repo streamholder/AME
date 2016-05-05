@@ -14,8 +14,6 @@ namespace PGMEBackend.GLControls
         public int width = 0;
         public int height = 0;
 
-        public MapEditorTools tool = MapEditorTools.None;
-
         public int mouseX = -1;
         public int mouseY = -1;
         public int endMouseX = -1;
@@ -98,122 +96,8 @@ namespace PGMEBackend.GLControls
 
                 Surface.DrawOutlineRect(x + (w < 0 ? 16 : 0), y + (h < 0 ? 16 : 0), w + (w >= 0 ? 0 : -16), h + (h >= 0 ? 0 : -16), rectColor);
 
-                if (tool == MapEditorTools.None)
-                {
-                    Surface.DrawOutlineRect(mouseX * 16, mouseY * 16, 16, 16, rectDefaultColor);
-                }
+                Surface.DrawOutlineRect(mouseX * 16, mouseY * 16, 16, 16, rectDefaultColor);
             }
-        }
-
-        public void MouseMove(int x, int y)
-        {
-            int oldMouseX = mouseX;
-            int oldMouseY = mouseY;
-
-            mouseX = x / 16;
-            mouseY = y / 16;
-
-            if (mouseX >= width / 16)
-                mouseX = (width - 1) / 16;
-            if (mouseY >= height / 16)
-                mouseY = (height - 1) / 16;
-
-            if (mouseX < 0)
-                mouseX = 0;
-            if (mouseY < 0)
-                mouseY = 0;
-
-            if (tool == MapEditorTools.Pencil && (mouseX != oldMouseX || mouseY != oldMouseY))
-            {
-                selectX = mouseX;
-                selectY = mouseY;
-                endMouseX = mouseX;
-                endMouseY = mouseY;
-                selectWidth = 1;
-                selectHeight = 1;
-            }
-            else if (tool == MapEditorTools.Eyedropper)
-            {
-                selectX = (mouseX > endMouseX) ? endMouseX : mouseX;
-                selectY = (mouseY > endMouseY) ? endMouseY : mouseY;
-                selectWidth = Math.Abs(mouseX - endMouseX) + 1;
-                selectHeight = Math.Abs(mouseY - endMouseY) + 1;
-            }
-        }
-
-        public void MouseLeave()
-        {
-            mouseX = -1;
-            mouseY = -1;
-            endMouseX = -1;
-            endMouseY = -1;
-        }
-
-        public void MouseDown(MapEditorTools Tool)
-        {
-            if (tool == MapEditorTools.None)
-            {
-                tool = Tool;
-                if (tool == MapEditorTools.Pencil || tool == MapEditorTools.Eyedropper)
-                {
-                    selectX = mouseX;
-                    selectY = mouseY;
-                    selectWidth = 1;
-                    selectHeight = 1;
-                    endMouseX = mouseX;
-                    endMouseY = mouseY;
-                    if (tool == MapEditorTools.Pencil)
-                        rectColor = rectPaintColor;
-                    else
-                        rectColor = rectSelectColor;
-                }
-                else
-                    rectColor = rectDefaultColor;
-            }
-        }
-
-        public void MouseUp(MapEditorTools Tool)
-        {
-            if (tool == Tool)
-            {
-                selectX = (mouseX > endMouseX) ? endMouseX : mouseX;
-                selectY = (mouseY > endMouseY) ? endMouseY : mouseY;
-                selectWidth = Math.Abs(mouseX - endMouseX) + 1;
-                selectHeight = Math.Abs(mouseY - endMouseY) + 1;
-
-                selectArray = new short[selectWidth * selectHeight];
-
-                for (int i = 0; i < selectHeight; i++)
-                    for (int j = 0; j < selectWidth; j++)
-                        selectArray[(i * selectWidth) + j] = (short)((selectX + (selectY * 8)) + (i * 8) + j);
-                /*
-                foreach (var item in Program.glMapEditor.selectArray)
-                {
-                    Console.WriteLine(item.ToString("X4"));
-                }*/
-
-                tool = MapEditorTools.None;
-                rectColor = rectPaintColor;
-            }
-        }
-
-        public void SelectBlock(int blockNum)
-        {
-            selectWidth = 1;
-            selectHeight = 1;
-            if (blockNum >= 0)
-            {
-                selectX = blockNum % 8;
-                selectY = blockNum / 8;
-                Program.mainGUI.ScrollBlockChooserToBlock(blockNum);
-            }
-            else
-            {
-                selectX = -1;
-                selectY = -1;
-            }
-
-            Program.mainGUI.RefreshBlockEditorControl();
         }
     }
 }
